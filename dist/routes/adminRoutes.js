@@ -1,0 +1,25 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const adminController_1 = require("../controllers/adminController");
+const auth_1 = require("../middleware/auth");
+const router = express_1.default.Router();
+router.use(auth_1.authenticate);
+router.use((0, auth_1.authorize)('admin'));
+router.get('/users', adminController_1.getAllUsers);
+router.get('/users/:id', adminController_1.getUserById);
+router.post('/users', adminController_1.createUser);
+router.put('/users/:id', adminController_1.updateUser);
+router.delete('/users/:id', adminController_1.deleteUser);
+router.get('/attendances', adminController_1.getAllAttendances);
+router.get('/attendances/today', adminController_1.getTodayAttendances);
+router.get('/attendances/stats', adminController_1.getAttendanceStats);
+router.get('/attendances/:id', adminController_1.getAttendanceDetail);
+router.patch('/attendances/:id/status', adminController_1.updateAttendanceStatus);
+router.get('/notifications', adminController_1.getNotifications);
+router.patch('/notifications/:id/read', adminController_1.markNotificationAsRead);
+router.patch('/notifications/read-all', adminController_1.markAllNotificationsAsRead);
+exports.default = router;
