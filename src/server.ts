@@ -16,12 +16,19 @@ dotenv.config();
 const app: Application = express();
 
 // Middleware
-app.use(helmet());
+// Disable helmet for CORS compatibility (allow all domains)
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginEmbedderPolicy: false,
+}));
 app.use(compression());
 app.use(morgan('dev'));
+// Allow all origins (no CORS restrictions)
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true,
+  origin: '*',
+  credentials: false,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
