@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+  preCheckFraud,
   checkIn,
   checkOut,
   getTodayAttendance,
@@ -11,6 +12,7 @@ const router = express.Router();
 
 router.use(authenticate);
 
+router.get('/pre-check-fraud', preCheckFraud);
 router.post('/check-in', checkIn);
 router.post('/check-out', checkOut);
 router.get('/today', getTodayAttendance);

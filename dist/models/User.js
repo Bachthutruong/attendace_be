@@ -74,6 +74,22 @@ const userSchema = new mongoose_1.Schema({
         type: Boolean,
         default: true,
     },
+    defaultCheckInTime: {
+        type: String,
+        match: [/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Định dạng thời gian không hợp lệ (HH:mm)'],
+    },
+    defaultCheckOutTime: {
+        type: String,
+        match: [/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Định dạng thời gian không hợp lệ (HH:mm)'],
+    },
+    customCheckInTime: {
+        type: String,
+        match: [/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Định dạng thời gian không hợp lệ (HH:mm)'],
+    },
+    customCheckOutTime: {
+        type: String,
+        match: [/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Định dạng thời gian không hợp lệ (HH:mm)'],
+    },
 }, {
     timestamps: true,
 });

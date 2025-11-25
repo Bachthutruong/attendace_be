@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import User from '../models/User';
 import Attendance from '../models/Attendance';
 import Notification from '../models/Notification';
+import Settings from '../models/Settings';
 import { AuthRequest } from '../middleware/auth';
 import { getStartOfDay, getEndOfDay } from '../utils/dateHelper';
 
@@ -47,6 +48,8 @@ export const getAllUsers = async (req: AuthRequest, res: Response): Promise<void
       email: user.email,
       role: user.role,
       isActive: user.isActive,
+      customCheckInTime: user.customCheckInTime,
+      customCheckOutTime: user.customCheckOutTime,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     }));
@@ -93,6 +96,8 @@ export const getUserById = async (req: AuthRequest, res: Response): Promise<void
         email: user.email,
         role: user.role,
         isActive: user.isActive,
+        customCheckInTime: user.customCheckInTime,
+        customCheckOutTime: user.customCheckOutTime,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },
@@ -108,7 +113,15 @@ export const getUserById = async (req: AuthRequest, res: Response): Promise<void
 
 export const createUser = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { employeeCode, name, email, password, role } = req.body;
+    const { 
+      employeeCode, 
+      name, 
+      email, 
+      password, 
+      role,
+      customCheckInTime,
+      customCheckOutTime,
+    } = req.body;
 
     // Check if employeeCode exists
     const existingCode = await User.findOne({ employeeCode: employeeCode.toUpperCase() });
@@ -136,6 +149,8 @@ export const createUser = async (req: AuthRequest, res: Response): Promise<void>
       email,
       password,
       role: role || 'employee',
+      customCheckInTime,
+      customCheckOutTime,
     });
 
     res.status(201).json({
@@ -147,6 +162,8 @@ export const createUser = async (req: AuthRequest, res: Response): Promise<void>
         name: user.name,
         email: user.email,
         role: user.role,
+        customCheckInTime: user.customCheckInTime,
+        customCheckOutTime: user.customCheckOutTime,
       },
     });
   } catch (error: any) {
@@ -161,7 +178,15 @@ export const createUser = async (req: AuthRequest, res: Response): Promise<void>
 export const updateUser = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { employeeCode, name, email, role, isActive } = req.body;
+    const { 
+      employeeCode, 
+      name, 
+      email, 
+      role, 
+      isActive,
+      customCheckInTime,
+      customCheckOutTime,
+    } = req.body;
 
     const user = await User.findById(id);
 
@@ -202,6 +227,10 @@ export const updateUser = async (req: AuthRequest, res: Response): Promise<void>
     if (email) user.email = email;
     if (role) user.role = role;
     if (isActive !== undefined) user.isActive = isActive;
+    
+    // Update custom time settings
+    if (customCheckInTime !== undefined) user.customCheckInTime = customCheckInTime || undefined;
+    if (customCheckOutTime !== undefined) user.customCheckOutTime = customCheckOutTime || undefined;
 
     await user.save();
 
@@ -215,6 +244,8 @@ export const updateUser = async (req: AuthRequest, res: Response): Promise<void>
         email: user.email,
         role: user.role,
         isActive: user.isActive,
+        customCheckInTime: user.customCheckInTime,
+        customCheckOutTime: user.customCheckOutTime,
       },
     });
   } catch (error: any) {
@@ -678,6 +709,78 @@ export const updateAttendanceStatus = async (req: AuthRequest, res: Response): P
     res.status(500).json({
       success: false,
       message: 'Đã xảy ra lỗi',
+      error: error.message,
+    });
+  }
+};
+
+// Settings Management
+export const getSettings = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const settings = await Settings.findOne();
+    
+    if (!settings) {
+      // Create default settings if not exists
+      const newSettings = await Settings.create({});
+      res.status(200).json({
+        success: true,
+        data: newSettings,
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: settings,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: 'Đã xảy ra lỗi',
+      error: error.message,
+    });
+  }
+};
+
+export const updateSettings = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { defaultCheckInTime, defaultCheckOutTime, allowedIPs } = req.body;
+
+    let settings = await Settings.findOne();
+    
+    if (!settings) {
+      settings = await Settings.create({
+        defaultCheckInTime,
+        defaultCheckOutTime,
+        allowedIPs: allowedIPs || [],
+      });
+    } else {
+      if (defaultCheckInTime !== undefined) {
+        settings.defaultCheckInTime = defaultCheckInTime || undefined;
+      }
+      if (defaultCheckOutTime !== undefined) {
+        settings.defaultCheckOutTime = defaultCheckOutTime || undefined;
+      }
+      if (allowedIPs !== undefined) {
+        // Validate IPs - basic validation
+        if (Array.isArray(allowedIPs)) {
+          settings.allowedIPs = allowedIPs.filter(ip => ip && ip.trim() !== '');
+        } else {
+          settings.allowedIPs = [];
+        }
+      }
+      await settings.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Cập nhật cài đặt thành công',
+      data: settings,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: 'Đã xảy ra lỗi khi cập nhật cài đặt',
       error: error.message,
     });
   }

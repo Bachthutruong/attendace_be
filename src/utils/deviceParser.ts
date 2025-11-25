@@ -25,11 +25,27 @@ export const parseDeviceInfo = (req: Request): IDeviceInfo => {
     osVersion: result.os.version || 'Unknown',
     device: result.device.model || 'Unknown',
     deviceType: result.device.type || 'desktop',
+    userAgent: userAgent, // Store full user agent for detailed comparison
   };
 };
 
 export const generateDeviceFingerprint = (deviceInfo: IDeviceInfo): string => {
-  return `${deviceInfo.browser}-${deviceInfo.os}-${deviceInfo.device}-${deviceInfo.deviceType}`;
+  // Include more details for better fraud detection
+  return `${deviceInfo.browser}-${deviceInfo.browserVersion}-${deviceInfo.os}-${deviceInfo.osVersion}-${deviceInfo.device}-${deviceInfo.deviceType}`;
+};
+
+// Compare device info in detail
+export const compareDeviceInfo = (device1: IDeviceInfo, device2: IDeviceInfo): boolean => {
+  // Compare all fields
+  return (
+    device1.browser === device2.browser &&
+    device1.browserVersion === device2.browserVersion &&
+    device1.os === device2.os &&
+    device1.osVersion === device2.osVersion &&
+    device1.device === device2.device &&
+    device1.deviceType === device2.deviceType &&
+    (device1.userAgent === device2.userAgent || (!device1.userAgent && !device2.userAgent))
+  );
 };
 
 

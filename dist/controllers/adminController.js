@@ -3,11 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateAttendanceStatus = exports.getAttendanceDetail = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getNotifications = exports.getAttendanceStats = exports.getTodayAttendances = exports.getAllAttendances = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getAllUsers = void 0;
+exports.updateSettings = exports.getSettings = exports.updateAttendanceStatus = exports.getAttendanceDetail = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getNotifications = exports.getAttendanceStats = exports.getTodayAttendances = exports.getAllAttendances = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getAllUsers = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const User_1 = __importDefault(require("../models/User"));
 const Attendance_1 = __importDefault(require("../models/Attendance"));
 const Notification_1 = __importDefault(require("../models/Notification"));
+const Settings_1 = __importDefault(require("../models/Settings"));
 const dateHelper_1 = require("../utils/dateHelper");
 const getAllUsers = async (req, res) => {
     try {
@@ -40,6 +41,8 @@ const getAllUsers = async (req, res) => {
             email: user.email,
             role: user.role,
             isActive: user.isActive,
+            customCheckInTime: user.customCheckInTime,
+            customCheckOutTime: user.customCheckOutTime,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
         }));
@@ -83,6 +86,8 @@ const getUserById = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 isActive: user.isActive,
+                customCheckInTime: user.customCheckInTime,
+                customCheckOutTime: user.customCheckOutTime,
                 createdAt: user.createdAt,
                 updatedAt: user.updatedAt,
             },
@@ -99,7 +104,7 @@ const getUserById = async (req, res) => {
 exports.getUserById = getUserById;
 const createUser = async (req, res) => {
     try {
-        const { employeeCode, name, email, password, role } = req.body;
+        const { employeeCode, name, email, password, role, customCheckInTime, customCheckOutTime, } = req.body;
         const existingCode = await User_1.default.findOne({ employeeCode: employeeCode.toUpperCase() });
         if (existingCode) {
             res.status(400).json({
@@ -122,6 +127,8 @@ const createUser = async (req, res) => {
             email,
             password,
             role: role || 'employee',
+            customCheckInTime,
+            customCheckOutTime,
         });
         res.status(201).json({
             success: true,
@@ -132,6 +139,8 @@ const createUser = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                customCheckInTime: user.customCheckInTime,
+                customCheckOutTime: user.customCheckOutTime,
             },
         });
     }
@@ -147,7 +156,7 @@ exports.createUser = createUser;
 const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { employeeCode, name, email, role, isActive } = req.body;
+        const { employeeCode, name, email, role, isActive, customCheckInTime, customCheckOutTime, } = req.body;
         const user = await User_1.default.findById(id);
         if (!user) {
             res.status(404).json({
@@ -186,6 +195,10 @@ const updateUser = async (req, res) => {
             user.role = role;
         if (isActive !== undefined)
             user.isActive = isActive;
+        if (customCheckInTime !== undefined)
+            user.customCheckInTime = customCheckInTime || undefined;
+        if (customCheckOutTime !== undefined)
+            user.customCheckOutTime = customCheckOutTime || undefined;
         await user.save();
         res.status(200).json({
             success: true,
@@ -197,6 +210,8 @@ const updateUser = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 isActive: user.isActive,
+                customCheckInTime: user.customCheckInTime,
+                customCheckOutTime: user.customCheckOutTime,
             },
         });
     }
@@ -597,3 +612,71 @@ const updateAttendanceStatus = async (req, res) => {
     }
 };
 exports.updateAttendanceStatus = updateAttendanceStatus;
+const getSettings = async (req, res) => {
+    try {
+        const settings = await Settings_1.default.findOne();
+        if (!settings) {
+            const newSettings = await Settings_1.default.create({});
+            res.status(200).json({
+                success: true,
+                data: newSettings,
+            });
+            return;
+        }
+        res.status(200).json({
+            success: true,
+            data: settings,
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Đã xảy ra lỗi',
+            error: error.message,
+        });
+    }
+};
+exports.getSettings = getSettings;
+const updateSettings = async (req, res) => {
+    try {
+        const { defaultCheckInTime, defaultCheckOutTime, allowedIPs } = req.body;
+        let settings = await Settings_1.default.findOne();
+        if (!settings) {
+            settings = await Settings_1.default.create({
+                defaultCheckInTime,
+                defaultCheckOutTime,
+                allowedIPs: allowedIPs || [],
+            });
+        }
+        else {
+            if (defaultCheckInTime !== undefined) {
+                settings.defaultCheckInTime = defaultCheckInTime || undefined;
+            }
+            if (defaultCheckOutTime !== undefined) {
+                settings.defaultCheckOutTime = defaultCheckOutTime || undefined;
+            }
+            if (allowedIPs !== undefined) {
+                if (Array.isArray(allowedIPs)) {
+                    settings.allowedIPs = allowedIPs.filter(ip => ip && ip.trim() !== '');
+                }
+                else {
+                    settings.allowedIPs = [];
+                }
+            }
+            await settings.save();
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Cập nhật cài đặt thành công',
+            data: settings,
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Đã xảy ra lỗi khi cập nhật cài đặt',
+            error: error.message,
+        });
+    }
+};
+exports.updateSettings = updateSettings;

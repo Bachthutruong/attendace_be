@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const adminController_1 = require("../controllers/adminController");
+const leaveRequestController_1 = require("../controllers/leaveRequestController");
 const auth_1 = require("../middleware/auth");
 const router = express_1.default.Router();
 router.use(auth_1.authenticate);
@@ -22,4 +23,9 @@ router.patch('/attendances/:id/status', adminController_1.updateAttendanceStatus
 router.get('/notifications', adminController_1.getNotifications);
 router.patch('/notifications/:id/read', adminController_1.markNotificationAsRead);
 router.patch('/notifications/read-all', adminController_1.markAllNotificationsAsRead);
+router.get('/settings', adminController_1.getSettings);
+router.put('/settings', adminController_1.updateSettings);
+router.get('/leave-requests', leaveRequestController_1.getAllLeaveRequests);
+router.patch('/leave-requests/:id/approve', leaveRequestController_1.approveLeaveRequest);
+router.patch('/leave-requests/:id/reject', leaveRequestController_1.rejectLeaveRequest);
 exports.default = router;

@@ -8,6 +8,12 @@ export interface IUser extends Document {
   password: string;
   role: 'admin' | 'employee';
   isActive: boolean;
+  // Default check-in/check-out times (format: "HH:mm", e.g., "08:00", "17:00")
+  defaultCheckInTime?: string;
+  defaultCheckOutTime?: string;
+  // Custom check-in/check-out times for this specific employee (overrides default)
+  customCheckInTime?: string;
+  customCheckOutTime?: string;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -49,6 +55,22 @@ const userSchema = new Schema<IUser>(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    defaultCheckInTime: {
+      type: String,
+      match: [/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Định dạng thời gian không hợp lệ (HH:mm)'],
+    },
+    defaultCheckOutTime: {
+      type: String,
+      match: [/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Định dạng thời gian không hợp lệ (HH:mm)'],
+    },
+    customCheckInTime: {
+      type: String,
+      match: [/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Định dạng thời gian không hợp lệ (HH:mm)'],
+    },
+    customCheckOutTime: {
+      type: String,
+      match: [/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Định dạng thời gian không hợp lệ (HH:mm)'],
     },
   },
   {

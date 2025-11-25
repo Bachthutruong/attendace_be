@@ -13,7 +13,14 @@ import {
   getNotifications,
   markNotificationAsRead,
   markAllNotificationsAsRead,
+  getSettings,
+  updateSettings,
 } from '../controllers/adminController';
+import {
+  getAllLeaveRequests,
+  approveLeaveRequest,
+  rejectLeaveRequest,
+} from '../controllers/leaveRequestController';
 import { authenticate, authorize } from '../middleware/auth';
 
 const router = express.Router();
@@ -40,6 +47,15 @@ router.patch('/attendances/:id/status', updateAttendanceStatus);
 router.get('/notifications', getNotifications);
 router.patch('/notifications/:id/read', markNotificationAsRead);
 router.patch('/notifications/read-all', markAllNotificationsAsRead);
+
+// Settings
+router.get('/settings', getSettings);
+router.put('/settings', updateSettings);
+
+// Leave requests management
+router.get('/leave-requests', getAllLeaveRequests);
+router.patch('/leave-requests/:id/approve', approveLeaveRequest);
+router.patch('/leave-requests/:id/reject', rejectLeaveRequest);
 
 export default router;
 

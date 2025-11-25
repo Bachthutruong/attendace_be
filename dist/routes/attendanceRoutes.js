@@ -8,6 +8,7 @@ const attendanceController_1 = require("../controllers/attendanceController");
 const auth_1 = require("../middleware/auth");
 const router = express_1.default.Router();
 router.use(auth_1.authenticate);
+router.get('/pre-check-fraud', attendanceController_1.preCheckFraud);
 router.post('/check-in', attendanceController_1.checkIn);
 router.post('/check-out', attendanceController_1.checkOut);
 router.get('/today', attendanceController_1.getTodayAttendance);

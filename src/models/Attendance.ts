@@ -7,6 +7,7 @@ export interface IDeviceInfo {
   osVersion: string;
   device: string;
   deviceType: string;
+  userAgent?: string; // Full user agent string for detailed comparison
 }
 
 export interface IAttendanceRecord {
@@ -27,6 +28,13 @@ export interface IAttendance extends Document {
   hasDeviceAlert: boolean;
   hasIpAlert: boolean;
   alertMessage?: string;
+  // Time-based alerts
+  hasTimeAlert: boolean;
+  timeAlertMessage?: string;
+  checkInLateMinutes?: number; // Minutes late for check-in
+  checkOutEarlyMinutes?: number; // Minutes early for check-out
+  // Fraud detection
+  fraudReason?: string; // Reason provided when fraud is detected
   createdAt: Date;
   updatedAt: Date;
 }
@@ -39,6 +47,7 @@ const deviceInfoSchema = new Schema<IDeviceInfo>(
     osVersion: String,
     device: String,
     deviceType: String,
+    userAgent: String, // Full user agent string for detailed comparison
   },
   { _id: false }
 );
@@ -98,6 +107,14 @@ const attendanceSchema = new Schema<IAttendance>(
       default: false,
     },
     alertMessage: String,
+    hasTimeAlert: {
+      type: Boolean,
+      default: false,
+    },
+    timeAlertMessage: String,
+    checkInLateMinutes: Number,
+    checkOutEarlyMinutes: Number,
+    fraudReason: String, // Reason provided when fraud is detected
   },
   {
     timestamps: true,

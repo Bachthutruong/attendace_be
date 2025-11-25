@@ -8,6 +8,7 @@ import { connectDatabase } from './config/database';
 import authRoutes from './routes/authRoutes';
 import attendanceRoutes from './routes/attendanceRoutes';
 import adminRoutes from './routes/adminRoutes';
+import leaveRequestRoutes from './routes/leaveRequestRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -37,6 +38,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/leave-requests', leaveRequestRoutes);
 
 // Health check
 app.get('/api/health', (req: Request, res: Response) => {

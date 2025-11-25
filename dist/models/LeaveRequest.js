@@ -34,75 +34,51 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-const deviceInfoSchema = new mongoose_1.Schema({
-    browser: String,
-    browserVersion: String,
-    os: String,
-    osVersion: String,
-    device: String,
-    deviceType: String,
-    userAgent: String,
-}, { _id: false });
-const attendanceRecordSchema = new mongoose_1.Schema({
-    type: {
-        type: String,
-        enum: ['check-in', 'check-out'],
-        required: true,
-    },
-    time: {
-        type: Date,
-        required: true,
-    },
-    ipAddress: {
-        type: String,
-        required: true,
-    },
-    deviceInfo: {
-        type: deviceInfoSchema,
-        required: true,
-    },
-    location: String,
-}, { _id: false });
-const attendanceSchema = new mongoose_1.Schema({
+const leaveRequestSchema = new mongoose_1.Schema({
     userId: {
         type: mongoose_1.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
+        index: true,
     },
-    date: {
+    leaveDate: {
         type: Date,
         required: true,
+        index: true,
     },
-    checkIn: attendanceRecordSchema,
-    checkOut: attendanceRecordSchema,
-    workedHours: {
-        type: Number,
-        default: 0,
+    leaveType: {
+        type: String,
+        enum: ['half-day-morning', 'half-day-afternoon', 'full-day'],
+        required: true,
     },
+    reason: {
+        type: String,
+        required: [true, 'Lý do nghỉ phép là bắt buộc'],
+        trim: true,
+    },
+    supportingStaff: [{
+            type: mongoose_1.Schema.Types.ObjectId,
+            ref: 'User',
+        }],
     status: {
         type: String,
-        enum: ['pending', 'completed', 'absent', 'rejected'],
+        enum: ['pending', 'approved', 'rejected'],
         default: 'pending',
+        index: true,
     },
-    hasDeviceAlert: {
-        type: Boolean,
-        default: false,
+    rejectionReason: {
+        type: String,
+        trim: true,
     },
-    hasIpAlert: {
-        type: Boolean,
-        default: false,
+    reviewedBy: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: 'User',
     },
-    alertMessage: String,
-    hasTimeAlert: {
-        type: Boolean,
-        default: false,
+    reviewedAt: {
+        type: Date,
     },
-    timeAlertMessage: String,
-    checkInLateMinutes: Number,
-    checkOutEarlyMinutes: Number,
-    fraudReason: String,
 }, {
     timestamps: true,
 });
-attendanceSchema.index({ userId: 1, date: 1 }, { unique: true });
-exports.default = mongoose_1.default.model('Attendance', attendanceSchema);
+leaveRequestSchema.index({ userId: 1, leaveDate: 1 });
+exports.default = mongoose_1.default.model('LeaveRequest', leaveRequestSchema);
