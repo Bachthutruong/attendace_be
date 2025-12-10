@@ -16,6 +16,7 @@ const adminRoutes_1 = __importDefault(require("./routes/adminRoutes"));
 const leaveRequestRoutes_1 = __importDefault(require("./routes/leaveRequestRoutes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
+app.set('trust proxy', true);
 app.use((0, helmet_1.default)({
     crossOriginResourcePolicy: { policy: "cross-origin" },
     crossOriginEmbedderPolicy: false,
@@ -26,7 +27,7 @@ app.use((0, cors_1.default)({
     origin: '*',
     credentials: false,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Forwarded-For', 'X-Real-IP', 'X-Client-IP', 'CF-Connecting-IP'],
 }));
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));

@@ -33,7 +33,7 @@ const checkDeviceAndIpAlerts = (
     if (!allowedIPs.includes(currentIp)) {
       hasIpAlert = true;
       isFraud = true;
-      alertMessage += `IP không nằm trong danh sách IP xác thực. IP hiện tại: ${currentIp}. `;
+      alertMessage += `IP 不在白名單中。目前 IP：${currentIp}。 `;
     }
   }
 
@@ -74,16 +74,16 @@ const checkDeviceAndIpAlerts = (
   if (!foundMatchingDevice && previousAttendances.length > 0) {
     hasDeviceAlert = true;
     isFraud = true;
-    alertMessage += 'Thiết bị khác với các lần trước. ';
+    alertMessage += '裝置與之前不同。 ';
     // Add device details to message
-    alertMessage += `Thiết bị hiện tại: ${currentDeviceInfo.browser} ${currentDeviceInfo.browserVersion} trên ${currentDeviceInfo.os} ${currentDeviceInfo.osVersion}. `;
+    alertMessage += `目前裝置：${currentDeviceInfo.browser} ${currentDeviceInfo.browserVersion} 於 ${currentDeviceInfo.os} ${currentDeviceInfo.osVersion}。 `;
   }
 
   // Check if current IP is different from all previous IPs (only if not already flagged by whitelist)
   if (!hasIpAlert && !previousIps.has(currentIp)) {
     hasIpAlert = true;
     isFraud = true;
-    alertMessage += 'Địa chỉ IP khác với các lần trước. ';
+    alertMessage += 'IP 位址與之前不同。 ';
   }
 
   return { hasDeviceAlert, hasIpAlert, alertMessage, isFraud };
@@ -104,7 +104,7 @@ export const checkIn = async (req: AuthRequest, res: Response): Promise<void> =>
     if (!user) {
       res.status(404).json({
         success: false,
-        message: 'Không tìm thấy người dùng',
+        message: '找不到使用者',
       });
       return;
     }
@@ -121,7 +121,7 @@ export const checkIn = async (req: AuthRequest, res: Response): Promise<void> =>
     if (attendance && attendance.checkIn) {
       res.status(400).json({
         success: false,
-        message: 'Bạn đã chấm công vào rồi. Vui lòng chấm công ra.',
+        message: '您已經打卡上班。請打卡下班。',
       });
       return;
     }
@@ -155,7 +155,7 @@ export const checkIn = async (req: AuthRequest, res: Response): Promise<void> =>
         hasTimeAlert = true;
         checkInLateMinutes = getMinutesDifference(checkInTime, expectedCheckInTime);
         const timeDiffStr = formatTimeDifference(checkInLateMinutes);
-        timeAlertMessage = `Check-in muộn ${timeDiffStr}. Giờ quy định: ${expectedCheckInTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}. `;
+        timeAlertMessage = `遲到 ${timeDiffStr}。規定時間：${expectedCheckInTime.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}。 `;
       }
     }
 
@@ -204,10 +204,10 @@ export const checkIn = async (req: AuthRequest, res: Response): Promise<void> =>
     // Create notification for admin
     const hasAnyAlert = hasDeviceAlert || hasIpAlert || hasTimeAlert;
     const notificationTitle = hasAnyAlert 
-      ? '⚠️ Check-in với cảnh báo'
-      : '✅ Check-in thành công';
+      ? '⚠️ 上班打卡 (有警告)'
+      : '✅ 上班打卡成功';
     
-    const notificationMessage = `${req.user?.name} đã check-in lúc ${formatDateTime(checkInTime)}. IP: ${ipAddress}. Thiết bị: ${deviceInfo.browser} trên ${deviceInfo.os}. ${combinedAlertMessage}`;
+    const notificationMessage = `${req.user?.name} 已於 ${formatDateTime(checkInTime)} 打卡上班。IP：${ipAddress}。裝置：${deviceInfo.browser} 於 ${deviceInfo.os}。 ${combinedAlertMessage}`;
 
     // Find all admins and create notifications
     const admins = await User.find({ role: 'admin', isActive: true });
@@ -234,7 +234,7 @@ export const checkIn = async (req: AuthRequest, res: Response): Promise<void> =>
       await Notification.create({
         userId: userId,
         type: 'alert',
-        title: '⚠️ Cảnh báo: Check-in muộn',
+        title: '⚠️ 警告：遲到',
         message: timeAlertMessage,
         metadata: {
           attendanceId: attendance._id,
@@ -248,7 +248,7 @@ export const checkIn = async (req: AuthRequest, res: Response): Promise<void> =>
 
     res.status(200).json({
       success: true,
-      message: 'Check-in thành công',
+      message: '上班打卡成功',
       data: attendance,
       alert: hasAnyAlert ? {
         hasDeviceAlert,
@@ -270,7 +270,7 @@ export const checkIn = async (req: AuthRequest, res: Response): Promise<void> =>
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi khi check-in',
+      message: '打卡上班時發生錯誤',
       error: error.message,
     });
   }
@@ -291,7 +291,7 @@ export const checkOut = async (req: AuthRequest, res: Response): Promise<void> =
     if (!user) {
       res.status(404).json({
         success: false,
-        message: 'Không tìm thấy người dùng',
+        message: '找不到使用者',
       });
       return;
     }
@@ -308,7 +308,7 @@ export const checkOut = async (req: AuthRequest, res: Response): Promise<void> =
     if (!attendance || !attendance.checkIn) {
       res.status(400).json({
         success: false,
-        message: 'Bạn chưa check-in. Vui lòng check-in trước.',
+        message: '您尚未打卡上班。請先打卡上班。',
       });
       return;
     }
@@ -316,7 +316,7 @@ export const checkOut = async (req: AuthRequest, res: Response): Promise<void> =
     if (attendance.checkOut) {
       res.status(400).json({
         success: false,
-        message: 'Bạn đã check-out rồi.',
+        message: '您已經打卡下班了。',
       });
       return;
     }
@@ -333,7 +333,7 @@ export const checkOut = async (req: AuthRequest, res: Response): Promise<void> =
       if (!settings.allowedIPs.includes(ipAddress)) {
         hasIpAlert = true;
         isFraud = true;
-        alertMessage += `IP không nằm trong danh sách IP xác thực. IP hiện tại: ${ipAddress}. `;
+        alertMessage += `IP 不在白名單中。目前 IP：${ipAddress}。 `;
       }
     }
 
@@ -341,14 +341,14 @@ export const checkOut = async (req: AuthRequest, res: Response): Promise<void> =
     if (!compareDeviceInfo(attendance.checkIn.deviceInfo, deviceInfo)) {
       hasDeviceAlert = true;
       isFraud = true;
-      alertMessage += 'Thiết bị check-out khác với check-in. ';
-      alertMessage += `Thiết bị check-out: ${deviceInfo.browser} ${deviceInfo.browserVersion} trên ${deviceInfo.os} ${deviceInfo.osVersion}. `;
+      alertMessage += '下班打卡裝置與上班打卡不同。 ';
+      alertMessage += `下班打卡裝置：${deviceInfo.browser} ${deviceInfo.browserVersion} 於 ${deviceInfo.os} ${deviceInfo.osVersion}。 `;
     }
 
     if (attendance.checkIn.ipAddress !== ipAddress) {
       hasIpAlert = true;
       isFraud = true;
-      alertMessage += 'IP check-out khác với check-in. ';
+      alertMessage += '下班打卡 IP 與上班打卡不同。 ';
     }
 
     // 2. Compare with all previous check-in/check-out records from other days
@@ -372,16 +372,16 @@ export const checkOut = async (req: AuthRequest, res: Response): Promise<void> =
     if (previousAlerts.hasDeviceAlert) {
       hasDeviceAlert = true;
       isFraud = true;
-      if (!alertMessage.includes('Thiết bị khác với các lần trước')) {
-        alertMessage += 'Thiết bị khác với các lần trước. ';
+      if (!alertMessage.includes('裝置與之前不同')) {
+        alertMessage += '裝置與之前不同。 ';
       }
     }
 
     if (previousAlerts.hasIpAlert && !hasIpAlert) {
       hasIpAlert = true;
       isFraud = true;
-      if (!alertMessage.includes('Địa chỉ IP khác với các lần trước')) {
-        alertMessage += 'Địa chỉ IP khác với các lần trước. ';
+      if (!alertMessage.includes('IP 位址與之前不同')) {
+        alertMessage += 'IP 位址與之前不同。 ';
       }
     }
 
@@ -401,7 +401,7 @@ export const checkOut = async (req: AuthRequest, res: Response): Promise<void> =
         hasTimeAlert = true;
         checkOutEarlyMinutes = getMinutesDifference(expectedCheckOutTime, checkOutTime);
         const timeDiffStr = formatTimeDifference(checkOutEarlyMinutes);
-        timeAlertMessage += `Check-out sớm ${timeDiffStr}. Giờ quy định: ${expectedCheckOutTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}. `;
+        timeAlertMessage += `早退 ${timeDiffStr}。規定時間：${expectedCheckOutTime.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}。 `;
       }
     }
 
@@ -433,10 +433,10 @@ export const checkOut = async (req: AuthRequest, res: Response): Promise<void> =
     // Create notification for admin
     const hasAnyAlert = hasDeviceAlert || hasIpAlert || hasTimeAlert;
     const notificationTitle = hasAnyAlert 
-      ? '⚠️ Check-out với cảnh báo'
-      : '✅ Check-out thành công';
+      ? '⚠️ 下班打卡 (有警告)'
+      : '✅ 下班打卡成功';
     
-    const notificationMessage = `${req.user?.name} đã check-out lúc ${formatDateTime(checkOutTime)}. Thời gian làm việc: ${attendance.workedHours}h. IP: ${ipAddress}. Thiết bị: ${deviceInfo.browser} trên ${deviceInfo.os}. ${combinedAlertMessage}`;
+    const notificationMessage = `${req.user?.name} 已於 ${formatDateTime(checkOutTime)} 打卡下班。工作時數：${attendance.workedHours}小時。IP：${ipAddress}。裝置：${deviceInfo.browser} 於 ${deviceInfo.os}。 ${combinedAlertMessage}`;
 
     // Find all admins and create notifications
     const admins = await User.find({ role: 'admin', isActive: true });
@@ -463,7 +463,7 @@ export const checkOut = async (req: AuthRequest, res: Response): Promise<void> =
       await Notification.create({
         userId: userId,
         type: 'alert',
-        title: '⚠️ Cảnh báo: Check-out sớm',
+        title: '⚠️ 警告：早退',
         message: timeAlertMessage,
         metadata: {
           attendanceId: attendance._id,
@@ -477,7 +477,7 @@ export const checkOut = async (req: AuthRequest, res: Response): Promise<void> =
 
     res.status(200).json({
       success: true,
-      message: 'Check-out thành công',
+      message: '打卡下班成功',
       data: attendance,
       alert: hasAnyAlert ? {
         hasDeviceAlert,
@@ -499,7 +499,7 @@ export const checkOut = async (req: AuthRequest, res: Response): Promise<void> =
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi khi check-out',
+      message: '打卡下班時發生錯誤',
       error: error.message,
     });
   }
@@ -553,12 +553,12 @@ export const preCheckFraud = async (req: AuthRequest, res: Response): Promise<vo
         if (!compareDeviceInfo(todayAttendance.checkIn.deviceInfo, deviceInfo)) {
           hasDeviceAlert = true;
           isFraud = true;
-          alertMessage += 'Thiết bị check-out khác với check-in. ';
+          alertMessage += '下班打卡裝置與上班打卡不同。 ';
         }
         if (todayAttendance.checkIn.ipAddress !== ipAddress) {
           hasIpAlert = true;
           isFraud = true;
-          alertMessage += 'IP check-out khác với check-in. ';
+          alertMessage += '下班打卡 IP 與上班打卡不同。 ';
         }
       }
     }
@@ -575,7 +575,7 @@ export const preCheckFraud = async (req: AuthRequest, res: Response): Promise<vo
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi',
+      message: '發生錯誤',
       error: error.message,
     });
   }
@@ -598,7 +598,7 @@ export const getTodayAttendance = async (req: AuthRequest, res: Response): Promi
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi',
+      message: '發生錯誤',
       error: error.message,
     });
   }
@@ -640,7 +640,7 @@ export const getMyAttendanceHistory = async (req: AuthRequest, res: Response): P
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi',
+      message: '發生錯誤',
       error: error.message,
     });
   }

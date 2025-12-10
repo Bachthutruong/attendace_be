@@ -17,6 +17,10 @@ dotenv.config();
 const app: Application = express();
 
 // Middleware
+// Trust proxy to get real client IP (important for getting correct IP)
+// This allows Express to trust the X-Forwarded-* headers
+app.set('trust proxy', true);
+
 // Disable helmet for CORS compatibility (allow all domains)
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
@@ -29,7 +33,7 @@ app.use(cors({
   origin: '*',
   credentials: false,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Forwarded-For', 'X-Real-IP', 'X-Client-IP', 'CF-Connecting-IP'],
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

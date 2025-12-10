@@ -3,13 +3,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateSettings = exports.getSettings = exports.updateAttendanceStatus = exports.getAttendanceDetail = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getNotifications = exports.getAttendanceStats = exports.getTodayAttendances = exports.getAllAttendances = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getAllUsers = void 0;
+exports.getCurrentIP = exports.updateSettings = exports.getSettings = exports.updateAttendanceStatus = exports.getAttendanceDetail = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getNotifications = exports.getAttendanceStats = exports.getTodayAttendances = exports.getAllAttendances = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getAllUsers = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const User_1 = __importDefault(require("../models/User"));
 const Attendance_1 = __importDefault(require("../models/Attendance"));
 const Notification_1 = __importDefault(require("../models/Notification"));
 const Settings_1 = __importDefault(require("../models/Settings"));
 const dateHelper_1 = require("../utils/dateHelper");
+const deviceParser_1 = require("../utils/deviceParser");
 const getAllUsers = async (req, res) => {
     try {
         const { search, role, isActive, page = 1, limit = 10 } = req.query;
@@ -60,7 +61,7 @@ const getAllUsers = async (req, res) => {
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi',
+            message: '發生錯誤',
             error: error.message,
         });
     }
@@ -73,7 +74,7 @@ const getUserById = async (req, res) => {
         if (!user) {
             res.status(404).json({
                 success: false,
-                message: 'Không tìm thấy nhân viên',
+                message: '找不到員工',
             });
             return;
         }
@@ -96,7 +97,7 @@ const getUserById = async (req, res) => {
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi',
+            message: '發生錯誤',
             error: error.message,
         });
     }
@@ -109,7 +110,7 @@ const createUser = async (req, res) => {
         if (existingCode) {
             res.status(400).json({
                 success: false,
-                message: 'Mã nhân viên đã được sử dụng',
+                message: '員工編號已被使用',
             });
             return;
         }
@@ -117,7 +118,7 @@ const createUser = async (req, res) => {
         if (existingEmail) {
             res.status(400).json({
                 success: false,
-                message: 'Email đã được sử dụng',
+                message: '電子郵件已被使用',
             });
             return;
         }
@@ -132,7 +133,7 @@ const createUser = async (req, res) => {
         });
         res.status(201).json({
             success: true,
-            message: 'Tạo nhân viên thành công',
+            message: '建立員工成功',
             data: {
                 id: user._id,
                 employeeCode: user.employeeCode,
@@ -147,7 +148,7 @@ const createUser = async (req, res) => {
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi khi tạo nhân viên',
+            message: '建立員工時發生錯誤',
             error: error.message,
         });
     }
@@ -161,7 +162,7 @@ const updateUser = async (req, res) => {
         if (!user) {
             res.status(404).json({
                 success: false,
-                message: 'Không tìm thấy nhân viên',
+                message: '找不到員工',
             });
             return;
         }
@@ -170,7 +171,7 @@ const updateUser = async (req, res) => {
             if (existingCode) {
                 res.status(400).json({
                     success: false,
-                    message: 'Mã nhân viên đã được sử dụng',
+                    message: '員工編號已被使用',
                 });
                 return;
             }
@@ -180,7 +181,7 @@ const updateUser = async (req, res) => {
             if (existingEmail) {
                 res.status(400).json({
                     success: false,
-                    message: 'Email đã được sử dụng',
+                    message: '電子郵件已被使用',
                 });
                 return;
             }
@@ -202,7 +203,7 @@ const updateUser = async (req, res) => {
         await user.save();
         res.status(200).json({
             success: true,
-            message: 'Cập nhật nhân viên thành công',
+            message: '更新員工成功',
             data: {
                 id: user._id,
                 employeeCode: user.employeeCode,
@@ -218,7 +219,7 @@ const updateUser = async (req, res) => {
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi khi cập nhật nhân viên',
+            message: '更新員工時發生錯誤',
             error: error.message,
         });
     }
@@ -230,7 +231,7 @@ const deleteUser = async (req, res) => {
         if (id === req.user?._id.toString()) {
             res.status(400).json({
                 success: false,
-                message: 'Bạn không thể xóa tài khoản của chính mình',
+                message: '您無法刪除自己的帳戶',
             });
             return;
         }
@@ -238,19 +239,19 @@ const deleteUser = async (req, res) => {
         if (!user) {
             res.status(404).json({
                 success: false,
-                message: 'Không tìm thấy nhân viên',
+                message: '找不到員工',
             });
             return;
         }
         res.status(200).json({
             success: true,
-            message: 'Xóa nhân viên thành công',
+            message: '刪除員工成功',
         });
     }
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi khi xóa nhân viên',
+            message: '刪除員工時發生錯誤',
             error: error.message,
         });
     }
@@ -363,7 +364,7 @@ const getAllAttendances = async (req, res) => {
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi',
+            message: '發生錯誤',
             error: error.message,
         });
     }
@@ -421,7 +422,7 @@ const getTodayAttendances = async (req, res) => {
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi',
+            message: '發生錯誤',
             error: error.message,
         });
     }
@@ -462,7 +463,7 @@ const getAttendanceStats = async (req, res) => {
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi',
+            message: '發生錯誤',
             error: error.message,
         });
     }
@@ -501,7 +502,7 @@ const getNotifications = async (req, res) => {
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi',
+            message: '發生錯誤',
             error: error.message,
         });
     }
@@ -514,7 +515,7 @@ const markNotificationAsRead = async (req, res) => {
         if (!notification) {
             res.status(404).json({
                 success: false,
-                message: 'Không tìm thấy thông báo',
+                message: '找不到通知',
             });
             return;
         }
@@ -526,7 +527,7 @@ const markNotificationAsRead = async (req, res) => {
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi',
+            message: '發生錯誤',
             error: error.message,
         });
     }
@@ -537,13 +538,13 @@ const markAllNotificationsAsRead = async (req, res) => {
         await Notification_1.default.updateMany({ userId: req.user?._id, isRead: false }, { isRead: true });
         res.status(200).json({
             success: true,
-            message: 'Đã đánh dấu tất cả thông báo là đã đọc',
+            message: '已將所有通知標記為已讀',
         });
     }
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi',
+            message: '發生錯誤',
             error: error.message,
         });
     }
@@ -557,7 +558,7 @@ const getAttendanceDetail = async (req, res) => {
         if (!attendance) {
             res.status(404).json({
                 success: false,
-                message: 'Không tìm thấy bản ghi chấm công',
+                message: '找不到考勤記錄',
             });
             return;
         }
@@ -569,7 +570,7 @@ const getAttendanceDetail = async (req, res) => {
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi',
+            message: '發生錯誤',
             error: error.message,
         });
     }
@@ -582,7 +583,7 @@ const updateAttendanceStatus = async (req, res) => {
         if (!['completed', 'rejected', 'pending'].includes(status)) {
             res.status(400).json({
                 success: false,
-                message: 'Trạng thái không hợp lệ',
+                message: '狀態無效',
             });
             return;
         }
@@ -590,7 +591,7 @@ const updateAttendanceStatus = async (req, res) => {
         if (!attendance) {
             res.status(404).json({
                 success: false,
-                message: 'Không tìm thấy bản ghi chấm công',
+                message: '找不到考勤記錄',
             });
             return;
         }
@@ -599,14 +600,14 @@ const updateAttendanceStatus = async (req, res) => {
         await attendance.populate('userId', 'employeeCode name email role');
         res.status(200).json({
             success: true,
-            message: status === 'completed' ? 'Đã phê duyệt chấm công' : status === 'rejected' ? 'Đã từ chối chấm công' : 'Đã cập nhật trạng thái',
+            message: status === 'completed' ? '已批准考勤' : status === 'rejected' ? '已拒絕考勤' : '狀態已更新',
             data: attendance,
         });
     }
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi',
+            message: '發生錯誤',
             error: error.message,
         });
     }
@@ -631,7 +632,7 @@ const getSettings = async (req, res) => {
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi',
+            message: '發生錯誤',
             error: error.message,
         });
     }
@@ -667,16 +668,35 @@ const updateSettings = async (req, res) => {
         }
         res.status(200).json({
             success: true,
-            message: 'Cập nhật cài đặt thành công',
+            message: '設定更新成功',
             data: settings,
         });
     }
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi khi cập nhật cài đặt',
+            message: '更新設定時發生錯誤',
             error: error.message,
         });
     }
 };
 exports.updateSettings = updateSettings;
+const getCurrentIP = async (req, res) => {
+    try {
+        const currentIp = (0, deviceParser_1.getClientIp)(req);
+        res.status(200).json({
+            success: true,
+            data: {
+                currentIp,
+            },
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: '取得目前 IP 時發生錯誤',
+            error: error.message,
+        });
+    }
+};
+exports.getCurrentIP = getCurrentIP;

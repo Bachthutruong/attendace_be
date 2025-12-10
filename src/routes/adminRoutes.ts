@@ -15,6 +15,7 @@ import {
   markAllNotificationsAsRead,
   getSettings,
   updateSettings,
+  getCurrentIP,
 } from '../controllers/adminController';
 import {
   getAllLeaveRequests,
@@ -51,6 +52,7 @@ router.patch('/notifications/read-all', markAllNotificationsAsRead);
 // Settings
 router.get('/settings', getSettings);
 router.put('/settings', updateSettings);
+router.get('/current-ip', getCurrentIP);
 
 // Leave requests management
 router.get('/leave-requests', getAllLeaveRequests);

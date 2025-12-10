@@ -25,6 +25,7 @@ router.patch('/notifications/:id/read', adminController_1.markNotificationAsRead
 router.patch('/notifications/read-all', adminController_1.markAllNotificationsAsRead);
 router.get('/settings', adminController_1.getSettings);
 router.put('/settings', adminController_1.updateSettings);
+router.get('/current-ip', adminController_1.getCurrentIP);
 router.get('/leave-requests', leaveRequestController_1.getAllLeaveRequests);
 router.patch('/leave-requests/:id/approve', leaveRequestController_1.approveLeaveRequest);
 router.patch('/leave-requests/:id/reject', leaveRequestController_1.rejectLeaveRequest);

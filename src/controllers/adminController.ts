@@ -6,6 +6,7 @@ import Notification from '../models/Notification';
 import Settings from '../models/Settings';
 import { AuthRequest } from '../middleware/auth';
 import { getStartOfDay, getEndOfDay } from '../utils/dateHelper';
+import { getClientIp } from '../utils/deviceParser';
 
 // User Management
 export const getAllUsers = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -67,7 +68,7 @@ export const getAllUsers = async (req: AuthRequest, res: Response): Promise<void
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi',
+      message: '發生錯誤',
       error: error.message,
     });
   }
@@ -82,7 +83,7 @@ export const getUserById = async (req: AuthRequest, res: Response): Promise<void
     if (!user) {
       res.status(404).json({
         success: false,
-        message: 'Không tìm thấy nhân viên',
+        message: '找不到員工',
       });
       return;
     }
@@ -105,7 +106,7 @@ export const getUserById = async (req: AuthRequest, res: Response): Promise<void
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi',
+      message: '發生錯誤',
       error: error.message,
     });
   }
@@ -128,7 +129,7 @@ export const createUser = async (req: AuthRequest, res: Response): Promise<void>
     if (existingCode) {
       res.status(400).json({
         success: false,
-        message: 'Mã nhân viên đã được sử dụng',
+        message: '員工編號已被使用',
       });
       return;
     }
@@ -138,7 +139,7 @@ export const createUser = async (req: AuthRequest, res: Response): Promise<void>
     if (existingEmail) {
       res.status(400).json({
         success: false,
-        message: 'Email đã được sử dụng',
+        message: '電子郵件已被使用',
       });
       return;
     }
@@ -155,7 +156,7 @@ export const createUser = async (req: AuthRequest, res: Response): Promise<void>
 
     res.status(201).json({
       success: true,
-      message: 'Tạo nhân viên thành công',
+      message: '建立員工成功',
       data: {
         id: user._id,
         employeeCode: user.employeeCode,
@@ -169,7 +170,7 @@ export const createUser = async (req: AuthRequest, res: Response): Promise<void>
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi khi tạo nhân viên',
+      message: '建立員工時發生錯誤',
       error: error.message,
     });
   }
@@ -193,7 +194,7 @@ export const updateUser = async (req: AuthRequest, res: Response): Promise<void>
     if (!user) {
       res.status(404).json({
         success: false,
-        message: 'Không tìm thấy nhân viên',
+        message: '找不到員工',
       });
       return;
     }
@@ -204,7 +205,7 @@ export const updateUser = async (req: AuthRequest, res: Response): Promise<void>
       if (existingCode) {
         res.status(400).json({
           success: false,
-          message: 'Mã nhân viên đã được sử dụng',
+          message: '員工編號已被使用',
         });
         return;
       }
@@ -216,7 +217,7 @@ export const updateUser = async (req: AuthRequest, res: Response): Promise<void>
       if (existingEmail) {
         res.status(400).json({
           success: false,
-          message: 'Email đã được sử dụng',
+          message: '電子郵件已被使用',
         });
         return;
       }
@@ -236,7 +237,7 @@ export const updateUser = async (req: AuthRequest, res: Response): Promise<void>
 
     res.status(200).json({
       success: true,
-      message: 'Cập nhật nhân viên thành công',
+      message: '更新員工成功',
       data: {
         id: user._id,
         employeeCode: user.employeeCode,
@@ -251,7 +252,7 @@ export const updateUser = async (req: AuthRequest, res: Response): Promise<void>
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi khi cập nhật nhân viên',
+      message: '更新員工時發生錯誤',
       error: error.message,
     });
   }
@@ -265,7 +266,7 @@ export const deleteUser = async (req: AuthRequest, res: Response): Promise<void>
     if (id === req.user?._id.toString()) {
       res.status(400).json({
         success: false,
-        message: 'Bạn không thể xóa tài khoản của chính mình',
+        message: '您無法刪除自己的帳戶',
       });
       return;
     }
@@ -275,19 +276,19 @@ export const deleteUser = async (req: AuthRequest, res: Response): Promise<void>
     if (!user) {
       res.status(404).json({
         success: false,
-        message: 'Không tìm thấy nhân viên',
+        message: '找不到員工',
       });
       return;
     }
 
     res.status(200).json({
       success: true,
-      message: 'Xóa nhân viên thành công',
+      message: '刪除員工成功',
     });
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi khi xóa nhân viên',
+      message: '刪除員工時發生錯誤',
       error: error.message,
     });
   }
@@ -428,7 +429,7 @@ export const getAllAttendances = async (req: AuthRequest, res: Response): Promis
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi',
+      message: '發生錯誤',
       error: error.message,
     });
   }
@@ -495,7 +496,7 @@ export const getTodayAttendances = async (req: AuthRequest, res: Response): Prom
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi',
+      message: '發生錯誤',
       error: error.message,
     });
   }
@@ -539,7 +540,7 @@ export const getAttendanceStats = async (req: AuthRequest, res: Response): Promi
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi',
+      message: '發生錯誤',
       error: error.message,
     });
   }
@@ -585,7 +586,7 @@ export const getNotifications = async (req: AuthRequest, res: Response): Promise
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi',
+      message: '發生錯誤',
       error: error.message,
     });
   }
@@ -604,7 +605,7 @@ export const markNotificationAsRead = async (req: AuthRequest, res: Response): P
     if (!notification) {
       res.status(404).json({
         success: false,
-        message: 'Không tìm thấy thông báo',
+        message: '找不到通知',
       });
       return;
     }
@@ -616,7 +617,7 @@ export const markNotificationAsRead = async (req: AuthRequest, res: Response): P
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi',
+      message: '發生錯誤',
       error: error.message,
     });
   }
@@ -631,12 +632,12 @@ export const markAllNotificationsAsRead = async (req: AuthRequest, res: Response
 
     res.status(200).json({
       success: true,
-      message: 'Đã đánh dấu tất cả thông báo là đã đọc',
+      message: '已將所有通知標記為已讀',
     });
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi',
+      message: '發生錯誤',
       error: error.message,
     });
   }
@@ -653,7 +654,7 @@ export const getAttendanceDetail = async (req: AuthRequest, res: Response): Prom
     if (!attendance) {
       res.status(404).json({
         success: false,
-        message: 'Không tìm thấy bản ghi chấm công',
+        message: '找不到考勤記錄',
       });
       return;
     }
@@ -665,7 +666,7 @@ export const getAttendanceDetail = async (req: AuthRequest, res: Response): Prom
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi',
+      message: '發生錯誤',
       error: error.message,
     });
   }
@@ -680,7 +681,7 @@ export const updateAttendanceStatus = async (req: AuthRequest, res: Response): P
     if (!['completed', 'rejected', 'pending'].includes(status)) {
       res.status(400).json({
         success: false,
-        message: 'Trạng thái không hợp lệ',
+        message: '狀態無效',
       });
       return;
     }
@@ -690,7 +691,7 @@ export const updateAttendanceStatus = async (req: AuthRequest, res: Response): P
     if (!attendance) {
       res.status(404).json({
         success: false,
-        message: 'Không tìm thấy bản ghi chấm công',
+        message: '找不到考勤記錄',
       });
       return;
     }
@@ -702,13 +703,13 @@ export const updateAttendanceStatus = async (req: AuthRequest, res: Response): P
 
     res.status(200).json({
       success: true,
-      message: status === 'completed' ? 'Đã phê duyệt chấm công' : status === 'rejected' ? 'Đã từ chối chấm công' : 'Đã cập nhật trạng thái',
+      message: status === 'completed' ? '已批准考勤' : status === 'rejected' ? '已拒絕考勤' : '狀態已更新',
       data: attendance,
     });
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi',
+      message: '發生錯誤',
       error: error.message,
     });
   }
@@ -736,7 +737,7 @@ export const getSettings = async (req: AuthRequest, res: Response): Promise<void
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi',
+      message: '發生錯誤',
       error: error.message,
     });
   }
@@ -774,13 +775,32 @@ export const updateSettings = async (req: AuthRequest, res: Response): Promise<v
 
     res.status(200).json({
       success: true,
-      message: 'Cập nhật cài đặt thành công',
+      message: '設定更新成功',
       data: settings,
     });
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi khi cập nhật cài đặt',
+      message: '更新設定時發生錯誤',
+      error: error.message,
+    });
+  }
+};
+
+export const getCurrentIP = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const currentIp = getClientIp(req);
+    
+    res.status(200).json({
+      success: true,
+      data: {
+        currentIp,
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: '取得目前 IP 時發生錯誤',
       error: error.message,
     });
   }

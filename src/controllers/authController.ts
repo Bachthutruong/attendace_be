@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import User from '../models/User';
 import { generateToken } from '../utils/tokenGenerator';
 import { AuthRequest } from '../middleware/auth';
+import { getClientIp } from '../utils/deviceParser';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -12,7 +13,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     if (existingCode) {
       res.status(400).json({
         success: false,
-        message: 'Mã nhân viên đã được sử dụng',
+        message: '員工編號已被使用',
       });
       return;
     }
@@ -22,7 +23,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     if (existingEmail) {
       res.status(400).json({
         success: false,
-        message: 'Email đã được sử dụng',
+        message: '電子郵件已被使用',
       });
       return;
     }
@@ -40,7 +41,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     res.status(201).json({
       success: true,
-      message: 'Đăng ký thành công',
+      message: '註冊成功',
       data: {
         token,
         user: {
@@ -55,7 +56,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi khi đăng ký',
+      message: '註冊時發生錯誤',
       error: error.message,
     });
   }
@@ -76,7 +77,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     if (!user || !user.isActive) {
       res.status(401).json({
         success: false,
-        message: 'Mã nhân viên/Email hoặc mật khẩu không chính xác',
+        message: '員工編號/電子郵件或密碼不正確',
       });
       return;
     }
@@ -87,16 +88,17 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     if (!isPasswordMatch) {
       res.status(401).json({
         success: false,
-        message: 'Mã nhân viên/Email hoặc mật khẩu không chính xác',
+        message: '員工編號/電子郵件或密碼不正確',
       });
       return;
     }
 
     const token = generateToken(user._id.toString());
+    const currentIp = getClientIp(req);
 
     res.status(200).json({
       success: true,
-      message: 'Đăng nhập thành công',
+      message: '登入成功',
       data: {
         token,
         user: {
@@ -106,12 +108,13 @@ export const login = async (req: Request, res: Response): Promise<void> => {
           email: user.email,
           role: user.role,
         },
+        currentIp,
       },
     });
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi khi đăng nhập',
+      message: '登入時發生錯誤',
       error: error.message,
     });
   }
@@ -134,7 +137,7 @@ export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi',
+      message: '發生錯誤',
       error: error.message,
     });
   }

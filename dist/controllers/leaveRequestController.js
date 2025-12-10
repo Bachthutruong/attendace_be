@@ -13,7 +13,7 @@ const createLeaveRequest = async (req, res) => {
         if (!leaveDate || !leaveType || !reason) {
             res.status(400).json({
                 success: false,
-                message: 'Vui lòng điền đầy đủ thông tin',
+                message: '請填寫完整資訊',
             });
             return;
         }
@@ -24,7 +24,7 @@ const createLeaveRequest = async (req, res) => {
         if (leaveDateObj < today) {
             res.status(400).json({
                 success: false,
-                message: 'Không thể xin nghỉ phép cho ngày đã qua',
+                message: '無法申請過去日期的休假',
             });
             return;
         }
@@ -36,7 +36,7 @@ const createLeaveRequest = async (req, res) => {
         if (existingRequest) {
             res.status(400).json({
                 success: false,
-                message: 'Bạn đã có đơn nghỉ phép cho ngày này',
+                message: '您已申請該日期的休假',
             });
             return;
         }
@@ -49,7 +49,7 @@ const createLeaveRequest = async (req, res) => {
             if (validStaff.length !== filteredStaff.length) {
                 res.status(400).json({
                     success: false,
-                    message: 'Một số nhân viên hỗ trợ không hợp lệ',
+                    message: '部分代理人無效',
                 });
                 return;
             }
@@ -66,14 +66,14 @@ const createLeaveRequest = async (req, res) => {
             .populate('supportingStaff', 'employeeCode name email');
         res.status(201).json({
             success: true,
-            message: 'Tạo đơn nghỉ phép thành công',
+            message: '建立請假單成功',
             data: populatedRequest,
         });
     }
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi khi tạo đơn nghỉ phép',
+            message: '建立請假單時發生錯誤',
             error: error.message,
         });
     }
@@ -110,7 +110,7 @@ const getMyLeaveRequests = async (req, res) => {
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi khi lấy danh sách đơn nghỉ phép',
+            message: '取得請假單列表時發生錯誤',
             error: error.message,
         });
     }
@@ -127,7 +127,7 @@ const getLeaveRequestById = async (req, res) => {
         if (!leaveRequest) {
             res.status(404).json({
                 success: false,
-                message: 'Không tìm thấy đơn nghỉ phép',
+                message: '找不到請假單',
             });
             return;
         }
@@ -139,7 +139,7 @@ const getLeaveRequestById = async (req, res) => {
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi khi lấy thông tin đơn nghỉ phép',
+            message: '取得請假單資訊時發生錯誤',
             error: error.message,
         });
     }
@@ -154,14 +154,14 @@ const updateLeaveRequest = async (req, res) => {
         if (!leaveRequest) {
             res.status(404).json({
                 success: false,
-                message: 'Không tìm thấy đơn nghỉ phép',
+                message: '找不到請假單',
             });
             return;
         }
         if (leaveRequest.status !== 'pending') {
             res.status(400).json({
                 success: false,
-                message: 'Chỉ có thể sửa đơn nghỉ phép đang chờ duyệt',
+                message: '只能修改待審核的請假單',
             });
             return;
         }
@@ -173,7 +173,7 @@ const updateLeaveRequest = async (req, res) => {
             if (leaveDateObj < today) {
                 res.status(400).json({
                     success: false,
-                    message: 'Không thể xin nghỉ phép cho ngày đã qua',
+                    message: '無法申請過去日期的休假',
                 });
                 return;
             }
@@ -186,7 +186,7 @@ const updateLeaveRequest = async (req, res) => {
             if (existingRequest) {
                 res.status(400).json({
                     success: false,
-                    message: 'Bạn đã có đơn nghỉ phép cho ngày này',
+                    message: '您已申請該日期的休假',
                 });
                 return;
             }
@@ -200,7 +200,7 @@ const updateLeaveRequest = async (req, res) => {
             if (validStaff.length !== filteredStaff.length) {
                 res.status(400).json({
                     success: false,
-                    message: 'Một số nhân viên hỗ trợ không hợp lệ',
+                    message: '部分代理人無效',
                 });
                 return;
             }
@@ -220,14 +220,14 @@ const updateLeaveRequest = async (req, res) => {
             .populate('reviewedBy', 'employeeCode name email');
         res.status(200).json({
             success: true,
-            message: 'Cập nhật đơn nghỉ phép thành công',
+            message: '更新請假單成功',
             data: populatedRequest,
         });
     }
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi khi cập nhật đơn nghỉ phép',
+            message: '更新請假單時發生錯誤',
             error: error.message,
         });
     }
@@ -241,27 +241,27 @@ const deleteLeaveRequest = async (req, res) => {
         if (!leaveRequest) {
             res.status(404).json({
                 success: false,
-                message: 'Không tìm thấy đơn nghỉ phép',
+                message: '找不到請假單',
             });
             return;
         }
         if (leaveRequest.status !== 'pending') {
             res.status(400).json({
                 success: false,
-                message: 'Chỉ có thể xóa đơn nghỉ phép đang chờ duyệt',
+                message: '只能刪除待審核的請假單',
             });
             return;
         }
         await LeaveRequest_1.default.findByIdAndDelete(id);
         res.status(200).json({
             success: true,
-            message: 'Xóa đơn nghỉ phép thành công',
+            message: '刪除請假單成功',
         });
     }
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi khi xóa đơn nghỉ phép',
+            message: '刪除請假單時發生錯誤',
             error: error.message,
         });
     }
@@ -305,7 +305,7 @@ const getAllLeaveRequests = async (req, res) => {
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi khi lấy danh sách đơn nghỉ phép',
+            message: '取得請假單列表時發生錯誤',
             error: error.message,
         });
     }
@@ -319,14 +319,14 @@ const approveLeaveRequest = async (req, res) => {
         if (!leaveRequest) {
             res.status(404).json({
                 success: false,
-                message: 'Không tìm thấy đơn nghỉ phép',
+                message: '找不到請假單',
             });
             return;
         }
         if (leaveRequest.status !== 'pending') {
             res.status(400).json({
                 success: false,
-                message: 'Đơn nghỉ phép này đã được xử lý',
+                message: '此請假單已處理',
             });
             return;
         }
@@ -340,14 +340,14 @@ const approveLeaveRequest = async (req, res) => {
             .populate('reviewedBy', 'employeeCode name email');
         res.status(200).json({
             success: true,
-            message: 'Duyệt đơn nghỉ phép thành công',
+            message: '批准請假單成功',
             data: populatedRequest,
         });
     }
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi khi duyệt đơn nghỉ phép',
+            message: '批准請假單時發生錯誤',
             error: error.message,
         });
     }
@@ -361,7 +361,7 @@ const rejectLeaveRequest = async (req, res) => {
         if (!rejectionReason) {
             res.status(400).json({
                 success: false,
-                message: 'Vui lòng nhập lý do từ chối',
+                message: '請輸入拒絕理由',
             });
             return;
         }
@@ -369,14 +369,14 @@ const rejectLeaveRequest = async (req, res) => {
         if (!leaveRequest) {
             res.status(404).json({
                 success: false,
-                message: 'Không tìm thấy đơn nghỉ phép',
+                message: '找不到請假單',
             });
             return;
         }
         if (leaveRequest.status !== 'pending') {
             res.status(400).json({
                 success: false,
-                message: 'Đơn nghỉ phép này đã được xử lý',
+                message: '此請假單已處理',
             });
             return;
         }
@@ -391,14 +391,14 @@ const rejectLeaveRequest = async (req, res) => {
             .populate('reviewedBy', 'employeeCode name email');
         res.status(200).json({
             success: true,
-            message: 'Từ chối đơn nghỉ phép thành công',
+            message: '拒絕請假單成功',
             data: populatedRequest,
         });
     }
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi khi từ chối đơn nghỉ phép',
+            message: '拒絕請假單時發生錯誤',
             error: error.message,
         });
     }
@@ -421,7 +421,7 @@ const getEmployeesForSupport = async (req, res) => {
     catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Đã xảy ra lỗi khi lấy danh sách nhân viên',
+            message: '取得員工列表時發生錯誤',
             error: error.message,
         });
     }
